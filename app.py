@@ -40,10 +40,16 @@ def summarize_differences(api_key, comparisons):
     for page1, page2, similarity, text1, text2 in comparisons:
         if np.mean(similarity) < 0.95:  # Threshold for displaying differences
             prompt = (
-                f"Compare the following texts and show the differences:\n\n"
-                f"Text 1 (Page {page1 + 1}):\n{text1}\n\n"
-                f"Text 2 (Page {page2 + 1}):\n{text2}\n\n"
-                "Provide a clear and organized summary of the differences but show the differences clearly."
+                f"Compare the following network configuration texts in detail, identifying changes in the new document. "
+                f"Do not use 'Text 1' and 'Text 2', use the laptop names instead. Provide the text snippet or sentences "
+                f"from the PDFs specifying the parameters that have changed, quantifying the changes, and highlighting "
+                f"potential impacts on the network. Suggest necessary testing areas based on the changes. Provide references "
+                f"or page numbers from the texts:\n\n"
+                f"Laptop 1:\n{text1}\n\n"
+                f"Laptop 2:\n{text2}\n\n"
+                "Provide a clear and organized summary of the differences, noting the parameters and quantifying the changes. "
+                "Include a snippet of the text with the differences highlighted and reference the text. Give the sentences in "
+                "specific pages or sections from the PDFs. Highlight the potential impact on the network and suggest necessary testing areas."
             )
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
@@ -134,4 +140,3 @@ else:
         st.info("Please upload two PDF files to compare.")
     if question and (not uploaded_file1 or not uploaded_file2):
         st.info("Please upload two PDF files to ask a question.")
-
