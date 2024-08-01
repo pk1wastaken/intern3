@@ -4,6 +4,7 @@ import openai
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
+import os
 
 # Initialize the sentence-transformer model
 model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
@@ -36,6 +37,7 @@ def compare_texts(texts1, texts2):
 # Function to summarize differences using GPT-3.5-turbo
 def summarize_differences(api_key, comparisons):
     openai.api_key = api_key
+    client = openai.OpenAI(api_key=api_key)
     summaries = []
     for page1, page2, similarity, text1, text2 in comparisons:
         if np.mean(similarity) < 0.95:  # Threshold for displaying differences
@@ -51,42 +53,33 @@ def summarize_differences(api_key, comparisons):
                 "Include a snippet of the text with the differences highlighted and reference the text. Give the sentences in "
                 "specific pages or sections from the PDFs. Highlight the potential impact on the network and suggest necessary testing areas."
             )
-            response = openai.ChatCompletion.create(
+            response = client.completions.create(
                 model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "You are a helpful assistant."},
-                    {"role": "user", "content": prompt},
-                ],
+                prompt=prompt,
                 max_tokens=500,
-                n=1,
-                stop=None,
                 temperature=0.5,
             )
-            summary = response['choices'][0]['message']['content'].strip()
+            summary = response.choices[0].text.strip()
             summaries.append((page1, page2, summary))
     return summaries
 
 # Function to answer questions about PDFs using GPT-3.5-turbo
 def answer_question(api_key, question, texts):
     openai.api_key = api_key
+    client = openai.OpenAI(api_key=api_key)
     combined_text = "\n".join(text for _, text in texts)
     prompt = (
         f"Here are the contents of the PDF:\n\n{combined_text}\n\n"
         f"Question: {question}\n"
         "Provide a clear and concise answer based on the contents of the PDF."
     )
-    response = openai.ChatCompletion.create(
+    response = client.completions.create(
         model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": prompt},
-        ],
+        prompt=prompt,
         max_tokens=500,
-        n=1,
-        stop=None,
         temperature=0.5,
     )
-    answer = response['choices'][0]['message']['content'].strip()
+    answer = response.choices[0].text.strip()
     return answer
 
 # Streamlit UI
