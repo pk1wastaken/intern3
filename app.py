@@ -37,7 +37,6 @@ def compare_texts(texts1, texts2):
 # Function to summarize differences using GPT-3.5-turbo
 def summarize_differences(api_key, comparisons):
     openai.api_key = api_key
-    client = openai.OpenAI(api_key=api_key)
     summaries = []
     for page1, page2, similarity, text1, text2 in comparisons:
         if np.mean(similarity) < 0.95:  # Threshold for displaying differences
@@ -53,7 +52,7 @@ def summarize_differences(api_key, comparisons):
                 "Include a snippet of the text with the differences highlighted and reference the text. Give the sentences in "
                 "specific pages or sections from the PDFs. Highlight the potential impact on the network and suggest necessary testing areas."
             )
-            response = client.completions.create(
+            response = openai.Completion.create(
                 model="gpt-3.5-turbo",
                 prompt=prompt,
                 max_tokens=500,
@@ -66,14 +65,13 @@ def summarize_differences(api_key, comparisons):
 # Function to answer questions about PDFs using GPT-3.5-turbo
 def answer_question(api_key, question, texts):
     openai.api_key = api_key
-    client = openai.OpenAI(api_key=api_key)
     combined_text = "\n".join(text for _, text in texts)
     prompt = (
         f"Here are the contents of the PDF:\n\n{combined_text}\n\n"
         f"Question: {question}\n"
         "Provide a clear and concise answer based on the contents of the PDF."
     )
-    response = client.completions.create(
+    response = openai.Completion.create(
         model="gpt-3.5-turbo",
         prompt=prompt,
         max_tokens=500,
